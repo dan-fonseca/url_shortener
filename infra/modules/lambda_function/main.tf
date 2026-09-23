@@ -5,7 +5,6 @@ terraform {
   }
 }
 
-data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 data "archive_file" "this" {

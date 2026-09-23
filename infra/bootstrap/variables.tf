@@ -25,3 +25,12 @@ variable "environments" {
   type        = list(string)
   default     = ["dev", "prod"]
 }
+
+variable "github_repository_ids" {
+  description = "Numeric owner/repo IDs. Needed when GitHub issues immutable subjects (repo:owner@id/repo@id:...)."
+  type = object({
+    owner_id = string
+    repo_id  = string
+  })
+  default = null
+}
