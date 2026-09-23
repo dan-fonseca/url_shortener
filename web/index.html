@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Serverless URL shortener on AWS Lambda, DynamoDB and CloudFront."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>"
+    />
+    <title>Shortly</title>
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Shortly</h1>
+        <p class="tagline">Short links, served from the edge.</p>
+      </header>
+
+      <form id="shorten-form" class="card" novalidate>
+        <label for="url">Long URL</label>
+        <div class="row">
+          <input
+            id="url"
+            name="url"
+            type="url"
+            placeholder="https://example.com/a/very/long/link"
+            required
+            autocomplete="off"
+          />
+          <button type="submit" id="submit">Shorten</button>
+        </div>
+
+        <details>
+          <summary>Options</summary>
+          <div class="options">
+            <label>
+              Custom alias
+              <input
+                id="alias"
+                name="alias"
+                type="text"
+                placeholder="my-link"
+                pattern="[A-Za-z0-9_\-]{3,32}"
+                autocomplete="off"
+              />
+            </label>
+            <label>
+              Expires
+              <select id="ttl" name="ttl">
+                <option value="">Never</option>
+                <option value="1">In 1 day</option>
+                <option value="7">In 7 days</option>
+                <option value="30">In 30 days</option>
+                <option value="365">In 1 year</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <p id="error" class="error" role="alert" hidden></p>
+      </form>
+
+      <section id="result" class="card result" hidden aria-live="polite">
+        <a id="short-url" target="_blank" rel="noopener"></a>
+        <button type="button" id="copy" class="secondary">Copy</button>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Your links</h2>
+          <button type="button" id="refresh" class="secondary small">Refresh stats</button>
+        </div>
+        <p id="empty" class="muted">Links you create in this browser show up here.</p>
+        <table id="links" hidden>
+          <thead>
+            <tr>
+              <th>Short link</th>
+              <th>Destination</th>
+              <th class="num">Clicks</th>
+              <th>Expires</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <footer class="muted">
+        CloudFront → API Gateway → Lambda → DynamoDB · deployed with Terraform + GitHub Actions
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
