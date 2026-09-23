@@ -110,7 +110,7 @@ jobs:
             -var="region=${{ vars.AWS_REGION }}" -var="repository=${{ github.repository }}"
           terraform show -no-color tfplan > plan.txt
       - name: Comment plan on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           ENVIRONMENT: ${{ matrix.environment }}
         with:
