@@ -23,6 +23,14 @@ data "aws_caller_identity" "current" {}
 locals {
   account_id = data.aws_caller_identity.current.account_id
   prefix     = var.project
+
+  # GitHub can issue OIDC subjects either as repo:<owner>/<repo> or, for repositories using
+  # immutable claims, as repo:<owner>@<ownerId>/<repo>@<repoId>. Accept both.
+  repo_parts = split("/", var.github_repository)
+  repo_subjects = compact([
+    "repo:${var.github_repository}",
+    var.github_repository_ids == null ? null : "repo:${local.repo_parts[0]}@${var.github_repository_ids.owner_id}/${local.repo_parts[1]}@${var.github_repository_ids.repo_id}",
+  ])
 }
 
 # ---------------------------------------------------------------------------
@@ -121,10 +129,9 @@ data "aws_iam_policy_document" "trust_plan" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        "repo:${var.github_repository}:pull_request",
-        "repo:${var.github_repository}:ref:refs/heads/main",
-      ]
+      values = flatten([
+        for repo in local.repo_subjects : ["${repo}:pull_request", "${repo}:ref:refs/heads/main"]
+      ])
     }
   }
 }
@@ -145,7 +152,7 @@ data "aws_iam_policy_document" "trust_deploy" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [for env in var.environments : "repo:${var.github_repository}:environment:${env}"]
+      values   = flatten([for repo in local.repo_subjects : [for env in var.environments : "${repo}:environment:${env}"]])
     }
   }
 }
