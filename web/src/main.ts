@@ -15,6 +15,7 @@ const errorEl = $<HTMLParagraphElement>('error');
 const resultEl = $<HTMLElement>('result');
 const shortUrlEl = $<HTMLAnchorElement>('short-url');
 const copyBtn = $<HTMLButtonElement>('copy');
+const resultMetaEl = $<HTMLParagraphElement>('result-meta');
 const refreshBtn = $<HTMLButtonElement>('refresh');
 const table = $<HTMLTableElement>('links');
 const emptyEl = $<HTMLParagraphElement>('empty');
@@ -72,6 +73,14 @@ function renderHistory(links = loadHistory()) {
   emptyEl.hidden = links.length > 0;
 }
 
+function describe(link: CreatedLink): string {
+  const target = new URL(link.url).host;
+  const expiry = link.expiresAt
+    ? `Expires on ${new Date(link.expiresAt).toLocaleDateString()}.`
+    : 'Never expires.';
+  return `Redirects to ${target}. ${expiry}`;
+}
+
 function showError(message: string | null) {
   errorEl.textContent = message ?? '';
   errorEl.hidden = !message;
@@ -95,8 +104,10 @@ form.addEventListener('submit', async (event) => {
     });
     shortUrlEl.href = created.shortUrl;
     shortUrlEl.textContent = created.shortUrl;
+    resultMetaEl.textContent = describe(created);
     resultEl.hidden = false;
-    copyBtn.textContent = 'Copy';
+    resetCopyButton();
+    copyBtn.focus({ preventScroll: true });
 
     const history = [
       { ...created, clicks: 0 },
@@ -113,13 +124,24 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+let copyTimer: number | undefined;
+
+function resetCopyButton() {
+  window.clearTimeout(copyTimer);
+  copyBtn.textContent = 'Copy link';
+  copyBtn.classList.remove('copied');
+}
+
 copyBtn.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(shortUrlEl.href);
-    copyBtn.textContent = 'Copied!';
+    copyBtn.textContent = '✓ Copied to clipboard';
+    copyBtn.classList.add('copied');
   } catch {
-    copyBtn.textContent = 'Copy failed';
+    copyBtn.textContent = 'Copy failed. Select the link instead';
   }
+  window.clearTimeout(copyTimer);
+  copyTimer = window.setTimeout(resetCopyButton, 2500);
 });
 
 refreshBtn.addEventListener('click', async () => {

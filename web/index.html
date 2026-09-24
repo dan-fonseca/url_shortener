@@ -7,10 +7,8 @@
       name="description"
       content="Serverless URL shortener on AWS Lambda, DynamoDB and CloudFront."
     />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#4f46e5" />
     <title>Shortly</title>
   </head>
   <body>
@@ -65,8 +63,20 @@
       </form>
 
       <section id="result" class="card result" hidden aria-live="polite">
-        <a id="short-url" target="_blank" rel="noopener"></a>
-        <button type="button" id="copy" class="secondary">Copy</button>
+        <div class="result-header">
+          <span class="check" aria-hidden="true">✓</span>
+          <div>
+            <h2>Your short link is ready</h2>
+            <p id="result-meta" class="muted"></p>
+          </div>
+        </div>
+        <div class="result-link">
+          <a id="short-url" target="_blank" rel="noopener"></a>
+          <button type="button" id="copy">Copy link</button>
+        </div>
+        <p class="muted small-note">
+          Share it anywhere. Every visit is counted, and you can track clicks under “Your links”.
+        </p>
       </section>
 
       <section class="card">

@@ -75,8 +75,11 @@ jobs:
           BUCKET: ${{ steps.outputs.outputs.web_bucket }}
         run: |
           # Hashed assets are immutable; index.html must always revalidate.
-          aws s3 sync . "s3://$BUCKET/app/" --delete --exclude index.html \
+          aws s3 sync . "s3://$BUCKET/app/" --delete --exclude index.html --exclude favicon.svg \
             --cache-control "public, max-age=31536000, immutable"
+          # Unhashed files keep the same name across releases, so they get a short cache.
+          aws s3 cp favicon.svg "s3://$BUCKET/app/favicon.svg" \
+            --cache-control "public, max-age=86400" --content-type "image/svg+xml"
           aws s3 cp index.html "s3://$BUCKET/app/index.html" \
             --cache-control "no-cache" --content-type "text/html; charset=utf-8"
 
@@ -84,7 +87,7 @@ jobs:
         run: >
           aws cloudfront create-invalidation
           --distribution-id "${{ steps.outputs.outputs.distribution_id }}"
-          --paths "/app" "/app/" "/app/index.html"
+          --paths "/app" "/app/" "/app/index.html" "/app/favicon.svg"
 
       - name: Smoke test
         working-directory: .
