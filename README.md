@@ -1,5 +1,13 @@
 # Serverless URL Shortener
 
+[![CI](https://github.com/dan-fonseca/url_shortener/actions/workflows/ci.yml/badge.svg)](https://github.com/dan-fonseca/url_shortener/actions/workflows/ci.yml)
+[![Deploy](https://github.com/dan-fonseca/url_shortener/actions/workflows/deploy.yml/badge.svg)](https://github.com/dan-fonseca/url_shortener/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Live demo: [dtby7o92luku6.cloudfront.net](https://dtby7o92luku6.cloudfront.net/)**
+
+![Screenshot of the web app](docs/screenshot.png)
+
 A production-style URL shortener on AWS: **CloudFront → API Gateway (HTTP API) → Lambda (TypeScript) → DynamoDB**, with a static web UI on S3. All infrastructure is defined in **Terraform** and shipped by **GitHub Actions** with keyless OIDC auth, PR plan previews, and gated multi-environment promotion.
 
 ```mermaid
@@ -60,6 +68,18 @@ Errors are consistent JSON: `400` validation (with per-field details), `404`, `4
 **Cheap and fast.** The Lambdas run on arm64/Graviton with esbuild-minified ESM bundles, and the AWS SDK is excluded from the bundle because it ships in the runtime. DynamoDB is on-demand and CloudFront uses `PriceClass_100`. At portfolio traffic the whole stack stays within the AWS free tier.
 
 **Observability.** Handlers write structured JSON logs (queryable field by field in CloudWatch Logs Insights). API Gateway writes JSON access logs with latency breakdowns, and Lambdas have X-Ray active tracing. All log groups have retention set.
+
+## Architecture decisions
+
+| Decision                                 | Why                                                                                                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **HTTP API** instead of REST API         | Cheaper and lower latency. This service doesn't need REST-only features such as API keys, request validation models or WAF on the API itself.                                 |
+| **One Lambda per route**                 | Each function gets an IAM role with exactly one DynamoDB action, and they can scale and be tuned independently. The cost is a few more resources, and Terraform handles that. |
+| **`302` redirects, not `301`**           | A 301 is cached by browsers and CDNs, so clicks would go uncounted and expired links would keep working. A 302 keeps every visit on the API.                                  |
+| **DynamoDB, single table, key = `code`** | Every access pattern is a lookup by short code, so no secondary indexes or scans are needed. On-demand billing suits spiky, low traffic.                                      |
+| **Terraform over CDK/SAM**               | Cloud-agnostic and widely used in industry. Small modules keep the code reusable across dev and prod.                                                                         |
+| **GitHub OIDC, no stored keys**          | There are no long-lived AWS credentials to leak or rotate. Trust is limited to this repository and its GitHub environments.                                                   |
+| **Build once, promote**                  | Prod deploys the exact artifacts that passed in dev, so a prod release never contains something dev didn't see.                                                               |
 
 ## CI/CD
 
