@@ -13,8 +13,8 @@ A production-style URL shortener on AWS: **CloudFront → API Gateway (HTTP API)
 ```mermaid
 flowchart LR
     U([User]) -->|HTTPS| CF[CloudFront<br/>+ CloudFront Functions]
-    CF -->|/app/*| S3[(S3<br/>web UI, private via OAC)]
-    CF -->|/api/*, /&#123;code&#125;| APIGW[API Gateway<br/>HTTP API<br/>throttling + access logs]
+    CF -->|"/app/*"| S3[(S3<br/>web UI, private via OAC)]
+    CF -->|"/api/*, /{code}"| APIGW[API Gateway<br/>HTTP API<br/>throttling + access logs]
     APIGW --> L1[λ createLink]
     APIGW --> L2[λ redirect]
     APIGW --> L3[λ getLink]
