@@ -2,8 +2,13 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    open-pull-requests-limit: 3
     schedule:
-      interval: weekly
+      interval: monthly
+    ignore:
+      # Major upgrades are done deliberately, not by bot.
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       aws-sdk:
         patterns: ['@aws-sdk/*']
@@ -12,13 +17,24 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    open-pull-requests-limit: 3
     schedule:
-      interval: weekly
+      interval: monthly
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    groups:
+      actions:
+        patterns: ['*']
 
   - package-ecosystem: terraform
     directories:
       - /infra/bootstrap
       - /infra/envs/dev
       - /infra/envs/prod
+    open-pull-requests-limit: 3
     schedule:
-      interval: weekly
+      interval: monthly
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
