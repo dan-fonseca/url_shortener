@@ -1,0 +1,14 @@
+{
+  "name": "@url-shortener/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vite": "^6.0.5"
+  }
+}

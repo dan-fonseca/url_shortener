@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+*.auto.tfvars
+
+# Terraform Lambda zips
+.build/
+plan.txt
+.claude/

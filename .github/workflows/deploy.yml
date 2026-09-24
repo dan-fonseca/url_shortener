@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two deploys at once, and never cancel one mid-apply.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      # Build once, promote the same artifacts through every environment.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: services/api/dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+
+  dev:
+    name: Dev
+    needs: build
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: dev
+    permissions:
+      contents: read
+      id-token: write
+
+  prod:
+    name: Prod
+    needs: dev
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: prod
+    permissions:
+      contents: read
+      id-token: write
