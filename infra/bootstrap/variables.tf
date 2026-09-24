@@ -34,3 +34,14 @@ variable "github_repository_ids" {
   })
   default = null
 }
+
+variable "monthly_budget_usd" {
+  description = "Monthly account cost budget in USD. Alerts fire at 50/80/100% of actual and 100% of forecasted spend."
+  type        = number
+  default     = 15
+}
+
+variable "budget_alert_email" {
+  description = "Where budget alerts are sent. Set in a gitignored *.auto.tfvars file so it stays out of the public repo."
+  type        = string
+}

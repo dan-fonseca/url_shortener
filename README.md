@@ -65,7 +65,7 @@ Errors are consistent JSON: `400` validation (with per-field details), `404`, `4
 
 **Abuse controls.** API Gateway throttles the whole stage, with a stricter limit on `POST /api/links`. Validation (Zod) rejects non-http schemes like `javascript:`, URLs over 2048 characters, reserved aliases, and links back to the shortener itself (redirect loops).
 
-**Cheap and fast.** The Lambdas run on arm64/Graviton with esbuild-minified ESM bundles, and the AWS SDK is excluded from the bundle because it ships in the runtime. DynamoDB is on-demand and CloudFront uses `PriceClass_100`. At portfolio traffic the whole stack stays within the AWS free tier.
+**Cheap and fast.** The Lambdas run on arm64/Graviton with esbuild-minified ESM bundles, and the AWS SDK is excluded from the bundle because it ships in the runtime. DynamoDB is on-demand and CloudFront uses `PriceClass_100`. At portfolio traffic the whole stack stays within the AWS free tier. A **$15/month AWS Budget** (managed in the bootstrap stack) emails alerts at 50%, 80% and 100% of actual spend and at 100% of forecasted spend. It tracks gross usage, with credits excluded, so it warns before credits are consumed.
 
 **Observability.** Handlers write structured JSON logs (queryable field by field in CloudWatch Logs Insights). API Gateway writes JSON access logs with latency breakdowns, and Lambdas have X-Ray active tracing. All log groups have retention set.
 
@@ -135,11 +135,17 @@ To make the local UI call a deployed stack, create `web/.env.local` with `VITE_A
 Prerequisites: an AWS account, Terraform ≥ 1.10, and a GitHub repository.
 
 1. **Bootstrap (once, with admin credentials):**
+
    ```bash
    cd infra/bootstrap
+   # Alert address for the cost budget; the *.auto.tfvars pattern is gitignored.
+   echo 'budget_alert_email = "you@example.com"' > budget.auto.tfvars
    terraform init
    terraform apply -var="github_repository=<owner>/<repo>"
    ```
+
+   If GitHub issues immutable OIDC subjects for your repo (`repo:owner@id/repo@id:...`), also set `github_repository_ids` as in `terraform.tfvars`.
+
 2. **Configure GitHub:**
    - Add repository **variables**: `AWS_REGION`, `TF_STATE_BUCKET`, `AWS_PLAN_ROLE_ARN` and `AWS_DEPLOY_ROLE_ARN`. The last three come from the bootstrap outputs.
    - Create **environments** `dev` and `prod`, and add _required reviewers_ to `prod`.
