@@ -9,6 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "vite": "^6.0.5"
+    "vite": "^6.4.5"
   }
 }
